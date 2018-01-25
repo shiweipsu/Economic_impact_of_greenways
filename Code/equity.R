@@ -1,43 +1,10 @@
 library(foreign)
 library(tidyverse)
 
-block <- read.dbf("Data/Portland_blocks.dbf")
-colnames(block)[23] <- "dis_bk_16"
-block <- block[block$dis_bk_16<999998 & block$dis_bk_grw<999998,]
-block$TRBG <- substring(block$GEOID10,6,12)
+source("Code/Convert UGM score.R")
 
 blockgrp <- read.dbf("Data/PDX_blockgrp_point.dbf")
-
-# compute UGM
-pdx_block <- block %>%
-  group_by(TRBG) %>%
-  summarise(
-    acc1_base = mean(exp(0-dis_bk_16/5280))*100,
-    acc3_emp_base=mean(exp(0-emp_Wl_16/5280))*100,
-    acc3_emp_pct_base=mean(exp(0-emp_pct_16+0.79))*100,
-    acc3_ret_base=mean(exp(0-ret_Wl_16/5280))*100,
-    acc3_ret_pct_base=mean(exp(0-ret_pct_16+0.79))*100,
-    acc3_svc_base=mean(exp(0-svc_Wl_16/5280))*100,
-    acc3_svc_pct_base=mean(exp(0-svc_pct_16+0.79))*100,
-    acc3_pak_base=mean(exp(0-pak_Wl_16/5280))*100,
-    acc3_pak_pct_base=mean(exp(0-pak_pct_16+0.79))*100,
-    
-    acc1_gw = mean(exp(0-dis_bk_grw/5280))*100,
-    acc3_emp_gw=mean(exp(0-emp_Wl_gw/5280))*100,
-    acc3_emp_pct_gw=mean(exp(0-emp_pct_gw+0.79))*100,
-    acc3_ret_gw=mean(exp(0-ret_Wl_gw/5280))*100,
-    acc3_ret_pct_gw=mean(exp(0-ret_pct_gw+0.79))*100,
-    acc3_svc_gw=mean(exp(0-svc_Wl_gw/5280))*100,
-    acc3_svc_pct_gw=mean(exp(0-svc_pct_gw+0.79))*100,
-    acc3_pak_gw=mean(exp(0-pak_Wl_gw/5280))*100,
-    acc3_pak_pct_gw=mean(exp(0-pak_pct_gw+0.79))*100
-  )
-
-summary(pdx_block)
-
-blockgrp <- merge(blockgrp,pdx_block)
-
-# ACS data ----------------------------------------------------------------
+blockgrp <- merge(blockgrp,block_grp)
 
 options(scipen=999)
 ACS <- read.csv("Data/ACS.csv")
@@ -53,7 +20,7 @@ blockgrp$Id2 <- substr(blockgrp$FIPS,1,11)
 ELP <- read.csv("Data/LEP.csv")
 blockgrp <- merge (blockgrp,ELP,by="Id2")
 
-rm(ACS,ELP,pdx_block)
+rm(ACS,ELP,block_grp)
 
 
 # Equity
@@ -335,7 +302,7 @@ p11 <-ggplot(race_m,aes(x=cuts_nonwhite))+
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2016", "Proposed Greenways in 2035")) +
   geom_point(data=subset(race_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
   geom_line(data=subset(race_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
-  scale_y_continuous(name="Low-Stress Network Proximity UGM Score",
+  scale_y_continuous(name="Low-Stress Proximity UGM Score",
                      sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
   scale_x_discrete(name="Quintiles",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
@@ -346,7 +313,7 @@ p22 <- ggplot(pov_m,aes(x=cuts_pov))+
   geom_bar(data=subset(pov_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2010", "Proposed Greenways in 2035")) +
   geom_point(data=subset(pov_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
-  scale_y_continuous(name="Low-Stress Network Proximity UGM Score",
+  scale_y_continuous(name="Low-Stress Proximity UGM Score",
                      sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
   scale_x_discrete(name="Quintiles",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
@@ -357,7 +324,7 @@ p33 <- ggplot(lep_m,aes(x=cuts_lep))+
   geom_bar(data=subset(lep_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2010", "Proposed Greenways in 2035")) +
   geom_point(data=subset(lep_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
-  scale_y_continuous(name="Low-Stress Network Proximity UGM Score",
+  scale_y_continuous(name="Low-Stress Proximity UGM Score",
                      sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
   scale_x_discrete(name="Quintiles",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
@@ -368,7 +335,7 @@ p44 <- ggplot(elder_m,aes(x=cuts_elder))+
   geom_bar(data=subset(elder_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2010", "Proposed Greenways in 2035")) +
   geom_point(data=subset(elder_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
-  scale_y_continuous(name="Low-Stress Network Proximity UGM Score",
+  scale_y_continuous(name="Low-Stress Proximity UGM Score",
                      sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
   scale_x_discrete(name="Quintiles",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
@@ -379,7 +346,7 @@ p55 <- ggplot(youth_m,aes(x=cuts_youth))+
   geom_bar(data=subset(youth_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2016", "Proposed Greenways in 2035")) +
   geom_point(data=subset(youth_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
-  scale_y_continuous(name="Low-Stress Network Proximity UGM Score",
+  scale_y_continuous(name="Low-Stress Proximity UGM Score",
                      sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
   scale_x_discrete(name="Quintiles",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
@@ -393,10 +360,10 @@ race_m <- melt(data.frame(change_by_race3[,c(1:3,5)]))
 p111 <- ggplot(race_m,aes(x=cuts_nonwhite))+
   geom_bar(data=subset(race_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2016", "Proposed Greenways in 2035")) +
-  geom_point(data=subset(race_m,variable==c("grwth")),aes(y=value*1000,col="Change in Percentage")) +
-  scale_y_continuous(name="Low-Stress Network Stress-Level UGM Score [0-100]",
-                     sec.axis = sec_axis(~.*0.1, name = "UGM Improvement [%]")) +
-  scale_x_discrete(name="Non-white Percentage Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
+  geom_point(data=subset(race_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
+  scale_y_continuous(name="Low-Stress Stress-Level UGM Score",
+                     sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
+  scale_x_discrete(name="Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
   ggtitle("Percentage of Non-white Population")
 
@@ -404,10 +371,10 @@ pov_m <- melt(data.frame(change_by_pov3[,c(1:3,5)]))
 p222 <- ggplot(pov_m,aes(x=cuts_pov))+
   geom_bar(data=subset(pov_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2010", "Proposed Greenways in 2035")) +
-  geom_point(data=subset(pov_m,variable==c("grwth")),aes(y=value*1000,col="Change in Percentage")) +
-  scale_y_continuous(name="Low-Stress Network Stress-Level UGM Score [0-100]",
-                     sec.axis = sec_axis(~.*.1, name = "UGM Improvement [%]")) +
-  scale_x_discrete(name="Low-Income Households Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
+  geom_point(data=subset(pov_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
+  scale_y_continuous(name="Low-Stress Stress-Level UGM Score",
+                     sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
+  scale_x_discrete(name="Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
   ggtitle("Percentage of Low-Income Households")
 
@@ -415,10 +382,10 @@ lep_m <- melt(data.frame(change_by_lep3[,c(1:3,5)]))
 p333 <- ggplot(lep_m,aes(x=cuts_lep))+
   geom_bar(data=subset(lep_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2010", "Proposed Greenways in 2035")) +
-  geom_point(data=subset(lep_m,variable==c("grwth")),aes(y=value*1000,col="Change in Percentage")) +
-  scale_y_continuous(name="Low-Stress Network Stress-Level UGM Score [0-100]",
-                     sec.axis = sec_axis(~.*.1, name = "UGM Improvement [%]")) +
-  scale_x_discrete(name="LEP Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
+  geom_point(data=subset(lep_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
+  scale_y_continuous(name="Low-Stress Stress-Level UGM Score",
+                     sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
+  scale_x_discrete(name="Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
   ggtitle("Percentage of Limited English Proficiency Population")
 
@@ -426,10 +393,10 @@ elder_m <- melt(data.frame(change_by_elder3[,c(1:3,5)]))
 p444 <- ggplot(elder_m,aes(x=cuts_elder))+
   geom_bar(data=subset(elder_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2010", "Proposed Greenways in 2035")) +
-  geom_point(data=subset(elder_m,variable==c("grwth")),aes(y=value*1000,col="Change in Percentage")) +
-  scale_y_continuous(name="Low-Stress Network Stress-Level UGM Score [0-100]",
-                     sec.axis = sec_axis(~.*.1, name = "UGM Improvement [%]")) +
-  scale_x_discrete(name="Older Adults Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
+  geom_point(data=subset(elder_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
+  scale_y_continuous(name="Low-Stress Stress-Level UGM Score",
+                     sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
+  scale_x_discrete(name="Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
   ggtitle("Percentage of Older Adults")
 
@@ -437,14 +404,14 @@ youth_m <- melt(data.frame(change_by_youth3[,c(1:3,5)]))
 p555 <- ggplot(youth_m,aes(x=cuts_youth))+
   geom_bar(data=subset(youth_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2016", "Proposed Greenways in 2035")) +
-  geom_point(data=subset(youth_m,variable==c("grwth")),aes(y=value*1000,col="Change in Percentage")) +
-  scale_y_continuous(name="Low-Stress Network Stress-Level UGM Score [0-100]",
-                     sec.axis = sec_axis(~.*.1, name = "UGM Improvement [%]")) +
-  scale_x_discrete(name="Young Persons Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
+  geom_point(data=subset(youth_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
+  scale_y_continuous(name="Low-Stress Stress-Level UGM Score",
+                     sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
+  scale_x_discrete(name="Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
   ggtitle("Percentage of Young Persons")
 
-
+grid.arrange(p111, p222, p333, p444,p555,  ncol = 2)
 
 # Historically Marginalized Community -------------------------------------
 blockgrp$TierI1 <- ifelse(blockgrp$race_nonwhite<0.224,0,1)
@@ -540,4 +507,47 @@ t.test(blockgrp[blockgrp$TierII3==1,]$acc3_emp_base, blockgrp[blockgrp$TierII3==
 t.test(blockgrp[blockgrp$TierII==0,]$acc3_emp_base, blockgrp[blockgrp$TierII==1,]$acc3_emp_base)
 t.test(blockgrp[blockgrp$TierII==0,]$acc3_emp_gw, blockgrp[blockgrp$TierII==1,]$acc3_emp_gw)
 t.test(blockgrp[blockgrp$TierII==1,]$acc3_emp_base, blockgrp[blockgrp$TierII==1,]$acc3_emp_gw)
+
+
+# acc3_emp_pct
+t.test(blockgrp[blockgrp$TierI1==0,]$acc3_emp_pct_base, blockgrp[blockgrp$TierI1==1,]$acc3_emp_pct_base)
+t.test(blockgrp[blockgrp$TierI1==0,]$acc3_emp_pct_gw, blockgrp[blockgrp$TierI1==1,]$acc3_emp_pct_gw)
+t.test(blockgrp[blockgrp$TierI1==1,]$acc3_emp_pct_base, blockgrp[blockgrp$TierI1==1,]$acc3_emp_pct_gw)
+
+t.test(blockgrp[blockgrp$TierI2==0,]$acc3_emp_pct_base, blockgrp[blockgrp$TierI2==1,]$acc3_emp_pct_base)
+t.test(blockgrp[blockgrp$TierI2==0,]$acc3_emp_pct_gw, blockgrp[blockgrp$TierI2==1,]$acc3_emp_pct_gw)
+t.test(blockgrp[blockgrp$TierI2==1,]$acc3_emp_pct_base, blockgrp[blockgrp$TierI2==1,]$acc3_emp_pct_gw)
+
+t.test(blockgrp[blockgrp$TierI3==0,]$acc3_emp_pct_base, blockgrp[blockgrp$TierI3==1,]$acc3_emp_pct_base)
+t.test(blockgrp[blockgrp$TierI3==0,]$acc3_emp_pct_gw, blockgrp[blockgrp$TierI3==1,]$acc3_emp_pct_gw)
+t.test(blockgrp[blockgrp$TierI3==1,]$acc3_emp_pct_base, blockgrp[blockgrp$TierI3==1,]$acc3_emp_pct_gw)
+
+t.test(blockgrp[blockgrp$TierI4==0,]$acc3_emp_pct_base, blockgrp[blockgrp$TierI4==1,]$acc3_emp_pct_base)
+t.test(blockgrp[blockgrp$TierI4==0,]$acc3_emp_pct_gw, blockgrp[blockgrp$TierI4==1,]$acc3_emp_pct_gw)
+t.test(blockgrp[blockgrp$TierI4==1,]$acc3_emp_pct_base, blockgrp[blockgrp$TierI4==1,]$acc3_emp_pct_gw)
+
+t.test(blockgrp[blockgrp$TierI5==0,]$acc3_emp_pct_base, blockgrp[blockgrp$TierI5==1,]$acc3_emp_pct_base)
+t.test(blockgrp[blockgrp$TierI5==0,]$acc3_emp_pct_gw, blockgrp[blockgrp$TierI5==1,]$acc3_emp_pct_gw)
+t.test(blockgrp[blockgrp$TierI5==1,]$acc3_emp_pct_base, blockgrp[blockgrp$TierI5==1,]$acc3_emp_pct_gw)
+
+t.test(blockgrp[blockgrp$TierI==0,]$acc3_emp_pct_base, blockgrp[blockgrp$TierI==1,]$acc3_emp_pct_base)
+t.test(blockgrp[blockgrp$TierI==0,]$acc3_emp_pct_gw, blockgrp[blockgrp$TierI==1,]$acc3_emp_pct_gw)
+t.test(blockgrp[blockgrp$TierI==1,]$acc3_emp_pct_base, blockgrp[blockgrp$TierI==1,]$acc3_emp_pct_gw)
+
+t.test(blockgrp[blockgrp$TierII1==0,]$acc3_emp_pct_base, blockgrp[blockgrp$TierII1==1,]$acc3_emp_pct_base)
+t.test(blockgrp[blockgrp$TierII1==0,]$acc3_emp_pct_gw, blockgrp[blockgrp$TierII1==1,]$acc3_emp_pct_gw)
+t.test(blockgrp[blockgrp$TierII1==1,]$acc3_emp_pct_base, blockgrp[blockgrp$TierII1==1,]$acc3_emp_pct_gw)
+
+t.test(blockgrp[blockgrp$TierII2==0,]$acc3_emp_pct_base, blockgrp[blockgrp$TierII2==1,]$acc3_emp_pct_base)
+t.test(blockgrp[blockgrp$TierII2==0,]$acc3_emp_pct_gw, blockgrp[blockgrp$TierII2==1,]$acc3_emp_pct_gw)
+t.test(blockgrp[blockgrp$TierII2==1,]$acc3_emp_pct_base, blockgrp[blockgrp$TierII2==1,]$acc3_emp_pct_gw)
+
+t.test(blockgrp[blockgrp$TierII3==0,]$acc3_emp_pct_base, blockgrp[blockgrp$TierII3==1,]$acc3_emp_pct_base)
+t.test(blockgrp[blockgrp$TierII3==0,]$acc3_emp_pct_gw, blockgrp[blockgrp$TierII3==1,]$acc3_emp_pct_gw)
+t.test(blockgrp[blockgrp$TierII3==1,]$acc3_emp_pct_base, blockgrp[blockgrp$TierII3==1,]$acc3_emp_pct_gw)
+
+t.test(blockgrp[blockgrp$TierII==0,]$acc3_emp_pct_base, blockgrp[blockgrp$TierII==1,]$acc3_emp_pct_base)
+t.test(blockgrp[blockgrp$TierII==0,]$acc3_emp_pct_gw, blockgrp[blockgrp$TierII==1,]$acc3_emp_pct_gw)
+t.test(blockgrp[blockgrp$TierII==1,]$acc3_emp_pct_base, blockgrp[blockgrp$TierII==1,]$acc3_emp_pct_gw)
+
 
