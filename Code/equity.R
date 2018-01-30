@@ -360,9 +360,9 @@ race_m <- melt(data.frame(change_by_race3[,c(1:3,5)]))
 p111 <- ggplot(race_m,aes(x=cuts_nonwhite))+
   geom_bar(data=subset(race_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2016", "Proposed Greenways in 2035")) +
-  geom_point(data=subset(race_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
+  geom_point(data=subset(race_m,variable==c("grwth")),aes(y=value*30,col="Change in Percentage")) +
   scale_y_continuous(name="Low-Stress Stress-Level UGM Score",
-                     sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
+                     sec.axis = sec_axis(~.*0.033, name = "UGM Improvement [%]")) +
   scale_x_discrete(name="Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
   ggtitle("Percentage of Non-white Population")
@@ -371,9 +371,9 @@ pov_m <- melt(data.frame(change_by_pov3[,c(1:3,5)]))
 p222 <- ggplot(pov_m,aes(x=cuts_pov))+
   geom_bar(data=subset(pov_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2010", "Proposed Greenways in 2035")) +
-  geom_point(data=subset(pov_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
+  geom_point(data=subset(pov_m,variable==c("grwth")),aes(y=value*30,col="Change in Percentage")) +
   scale_y_continuous(name="Low-Stress Stress-Level UGM Score",
-                     sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
+                     sec.axis = sec_axis(~.*0.033, name = "UGM Improvement [%]")) +
   scale_x_discrete(name="Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
   ggtitle("Percentage of Low-Income Households")
@@ -382,9 +382,9 @@ lep_m <- melt(data.frame(change_by_lep3[,c(1:3,5)]))
 p333 <- ggplot(lep_m,aes(x=cuts_lep))+
   geom_bar(data=subset(lep_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2010", "Proposed Greenways in 2035")) +
-  geom_point(data=subset(lep_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
+  geom_point(data=subset(lep_m,variable==c("grwth")),aes(y=value*30,col="Change in Percentage")) +
   scale_y_continuous(name="Low-Stress Stress-Level UGM Score",
-                     sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
+                     sec.axis = sec_axis(~.*0.033, name = "UGM Improvement [%]")) +
   scale_x_discrete(name="Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
   ggtitle("Percentage of Limited English Proficiency Population")
@@ -393,9 +393,9 @@ elder_m <- melt(data.frame(change_by_elder3[,c(1:3,5)]))
 p444 <- ggplot(elder_m,aes(x=cuts_elder))+
   geom_bar(data=subset(elder_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2010", "Proposed Greenways in 2035")) +
-  geom_point(data=subset(elder_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
+  geom_point(data=subset(elder_m,variable==c("grwth")),aes(y=value*30,col="Change in Percentage")) +
   scale_y_continuous(name="Low-Stress Stress-Level UGM Score",
-                     sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
+                     sec.axis = sec_axis(~.*0.033, name = "UGM Improvement [%]")) +
   scale_x_discrete(name="Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
   ggtitle("Percentage of Older Adults")
@@ -404,9 +404,9 @@ youth_m <- melt(data.frame(change_by_youth3[,c(1:3,5)]))
 p555 <- ggplot(youth_m,aes(x=cuts_youth))+
   geom_bar(data=subset(youth_m,variable!=c("grwth")),aes(y=value,fill=variable),stat = "identity",position="dodge") +
   scale_fill_manual(values=c("yellow3", "green3"),labels=c("Existing Bike Facilities in 2016", "Proposed Greenways in 2035")) +
-  geom_point(data=subset(youth_m,variable==c("grwth")),aes(y=value*100,col="Change in Percentage")) +
+  geom_point(data=subset(youth_m,variable==c("grwth")),aes(y=value*30,col="Change in Percentage")) +
   scale_y_continuous(name="Low-Stress Stress-Level UGM Score",
-                     sec.axis = sec_axis(~.*1, name = "UGM Improvement [%]")) +
+                     sec.axis = sec_axis(~.*0.033, name = "UGM Improvement [%]")) +
   scale_x_discrete(name="Quintile",labels=c("0-20%","20-40%","40-60%","60-80%","80-100%")) +
   theme(plot.title = element_text(hjust = 0.5),legend.title = element_blank(),legend.position = "none") +
   ggtitle("Percentage of Young Persons")
